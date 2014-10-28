@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <stdbool.h>
+#include <assert.h>
 #include <stdint.h>
 #include <time.h>
 #include <signal.h>
@@ -33,6 +34,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <GL/glut.h>
 //#include <bits/stdc++.h>
 
 //using namespace std;
@@ -44,6 +46,8 @@ uint32_t score=0;
 uint8_t scheme=0;
 char Gserver[100];
 char name[100];
+uint16_t board[SIZE][SIZE];
+
 
 std::set<std::string> usernames;
 std::map<std::string,int> username_score;
@@ -64,6 +68,49 @@ void getColor(uint16_t value, char *color, size_t length) {
 	}
 	snprintf(color,length,"\033[38;5;%d;48;5;%dm",*foreground,*background);
 }
+
+
+static float colorMap[][3] = { { 1.0f , 1.0f , 1.0f} ,
+			       { 0.5f, 0.5f ,  0.0f} ,
+			       { 0.8f, 0.5f ,  0.0f} ,
+			       { 0.5f , 0.8f,  0.0f} ,
+			       { 0.7f , 0.6f , 0.0f} ,
+				{ 0.6f, 0.7f,  0.0f},
+				{ 0.3f, 0.8f , 0.0f},
+				{ 0.8f, 0.3f , 0.0f},
+				{ 0.1f, 0.8f , 0.0f},
+				{ 0.9f, 0.3f, 0.0f },
+				{ 0.9f,  0.3f, 0.0f },
+				{ 0.3f, 0.6f, 0.0f },
+				{ 0.2f, 0.6f, 0.0f } };
+
+int getlog2(int val)
+{
+	int i  =0 ;
+	int x = val;
+
+	while( val >>= 1) ++i;
+
+	return i;
+} 
+
+void drawBoardOpenGL() {
+        int8_t x,y;
+
+	float step = 1.0f/4;
+
+	for ( y = 0; y < SIZE ; y++ )
+		for( x =0 ; x < SIZE ; x++ )
+		{
+		//	printf("%d\n",getlog2(board[x][y]));
+			glColor3f(colorMap[getlog2(board[x][y])][0],colorMap[ getlog2(board[x][y] )][1],colorMap[ getlog2(board[x][y]) ][2] );
+			glRectf( x*step-0.5f , y*step-0.5f , (x+1)*step-0.5f , (y+1)*step-0.5f);
+		}
+
+}
+
+
+
 
 void drawBoard(uint16_t board[SIZE][SIZE]) {
 	int8_t x,y;
@@ -358,15 +405,7 @@ void createGameServer()
 	}	
 			
 			
-      //mesg[n] = 0 ;
       
-      	
-
-      //printf("-------------------------------------------------------\n");
-      //mesg[n] = 0;
-      //printf("Received the following:\n");
-      //printf("%s\n",mesg);
-      //printf("-------------------------------------------------------\n");
    }
 
 
@@ -514,9 +553,76 @@ void registerUser(char name[])
 
 }
 
+void setup()
+{
+
+        memset(board,0,sizeof(board));
+        addRandom(board);
+        addRandom(board);
+        drawBoardOpenGL();
+
+
+}
+
+
+void display(void)
+{
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+	drawBoardOpenGL();
+	glutSwapBuffers();	
+	glutPostRedisplay();
+}
+
+
+void process_normal_keys(unsigned char key,int x,int y )
+{
+//	printf("I MA here");
+
+	bool success = false;
+
+ 	switch(key) {
+                        case 97:        // 'a' key
+                        case 104:       // 'h' key
+                        case 68:        // left arrow
+                                success = moveLeft(board);  break;
+                        case 100:       // 'd' key
+                        case 108:       // 'l' key
+                        case 67:        // right arrow
+                                success = moveRight(board); break;
+                        case 119:       // 'w' key
+                        case 107:       // 'k' key
+                        case 65:        // up arrow
+                                success = moveDown(board);    break;
+                        case 115:       // 's' key
+                        case 106:       // 'j' key
+                        case 66:        // down arrow
+                                success = moveUp(board);  break;
+			case 'q' : exit(0);
+                        default: success = false;
+                }
+                if (success) {
+//			printf("success");
+                        //if( isClient ) uploadScore();
+                       // drawBoardOpenGL();
+                       // usleep(150000);
+                        addRandom(board);
+                        drawBoardOpenGL();
+                        if (gameEnded(board)) {
+                                //TODO stop the game, no input, nothing moves
+				exit(EXIT_FAILURE);
+                        }
+                }
+
+
+
+
+}
+
+
 
 int main(int argc, char *argv[]) {
-	uint16_t board[SIZE][SIZE];
+	//uint16_t board[SIZE][SIZE];
 	
 	char c;
 	bool success;
@@ -542,6 +648,30 @@ int main(int argc, char *argv[]) {
 		std::cin >> Gserver;
 		registerUser(name);
 		isClient = true;
+	}
+	if( ( argc == 2) && strcmp( argv[1] , "opengl" ) == 0  )
+	{
+		// everything has to be about open gl... nothing related to normal things
+		memset( board , 0 , sizeof(board)) ;
+		setup();
+		glutInit( &argc, argv);
+		glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB|GLUT_DOUBLE);
+	//	glutInitWindoPosition(20,20);
+	//	glutInitWindowSize(400,300);
+		glutCreateWindow("A simple example");
+
+		glutDisplayFunc(display);
+
+	
+		glutKeyboardFunc( process_normal_keys);
+		signal(SIGINT, signal_callback_handler);		
+		glutMainLoop();
+
+
+		
+		assert(1 == 0 );
+
+
 	}
 
 	printf("\033[?25l\033[2J\033[H");
