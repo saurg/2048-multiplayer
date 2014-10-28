@@ -5,7 +5,8 @@
  
 
  
- Description : Adding multiplayer functionality to 2048.
+ Description : Added multiplayer functionality to 2048.
+ 	       Added opengl view 
 
  ME : Lokendra(ramanujam17)
 
