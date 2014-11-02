@@ -3,7 +3,7 @@
 
 Platform : C++
 
-Team Members : Lokendra Sharma,Himanshu Maurya
+Team Members : Lokendra Sharma,Himanshu Maurya,Arpan Gupta
 
 Description :  Our aim is to create a contest environment for 2048 game. We will follow the client server model, in which one computer is assigned as the server and all the clients connect to the server. The clients can play the game, and their status, scores etc. will be displayed/stored on the server. 
 
