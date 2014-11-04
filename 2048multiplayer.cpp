@@ -44,7 +44,7 @@
 
 
 uint32_t score=0;
-uint8_t scheme=0;
+
 char Gserver[100];
 char name[100];
 uint16_t board[SIZE][SIZE];
