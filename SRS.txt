@@ -13,6 +13,7 @@ Lokendra Sharma
 Himanshu Maurya
 Arpan Gupta
 Chandan Mittal
+Vaibhav Jaimini
 
 Description :  
 Our aim is to create a contest environment for 2048 game. 
