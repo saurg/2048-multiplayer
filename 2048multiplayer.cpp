@@ -109,7 +109,7 @@ void drawBoard(uint16_t board[SIZE][SIZE]) {
 		printf("\n");
 	}
 	printf("\n");
-	printf("        ←,↑,→,↓ or q        \n");
+	printf("        ←,↑,→,↓ or q/r        \n");
 	printf("\033[A");
 }
 
@@ -605,6 +605,7 @@ int main(int argc, char *argv[]) {
 			while (true) {
 			c=getchar();
 				if (c=='y'){
+					score = 0;
 					memset(board,0,sizeof(board));
 					addRandom(board);
 					addRandom(board);
