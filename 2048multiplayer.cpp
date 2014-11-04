@@ -35,7 +35,6 @@
 #include <map>
 #include <string>
 #include <iostream>
-#include <GL/glut.h>
 //#include <bits/stdc++.h>
 
 //using namespace std;
