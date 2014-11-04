@@ -8,7 +8,7 @@
  Description : Added multiplayer functionality to 2048.
  	       
 
- Our Team : OpenC.IIIT
+ Our Team : OpenC-IIIT
 
  ============================================================================
  */
@@ -35,15 +35,16 @@
 #include <map>
 #include <string>
 #include <iostream>
-//#include <bits/stdc++.h>
 
-//using namespace std;
 
+// just choosing a random port 
 #define PORT 31217
 
 #define SIZE 4
+
+
 uint32_t score=0;
-uint8_t scheme=0;
+
 char Gserver[100];
 char name[100];
 uint16_t board[SIZE][SIZE];
@@ -55,13 +56,10 @@ std::map<std::string,int> username_score;
 
 void getColor(uint16_t value, char *color, size_t length) {
 	uint8_t original[] = {8,255,1,255,2,255,3,255,4,255,5,255,6,255,7,255,9,0,10,0,11,0,12,0,13,0,14,0,255,0,255,0};
-	uint8_t blackwhite[] = {232,255,234,255,236,255,238,255,240,255,242,255,244,255,246,0,248,0,249,0,250,0,251,0,252,0,253,0,254,0,255,0};
-	uint8_t bluered[] = {235,255,63,255,57,255,93,255,129,255,165,255,201,255,200,255,199,255,198,255,197,255,196,255,196,255,196,255,196,255,196,255};
-	uint8_t *schemes[] = {original,blackwhite,bluered};
-	uint8_t *background = schemes[scheme]+0;
-	uint8_t *foreground = schemes[scheme]+1;
+	uint8_t *background = original+0;
+	uint8_t *foreground = original+1;
 	if (value > 0) while (value >>= 1) {
-		if (background+2<schemes[scheme]+sizeof(original)) {
+		if (background+2<original+sizeof(original)) {
 			background+=2;
 			foreground+=2;
 		}
@@ -113,6 +111,9 @@ void drawBoard(uint16_t board[SIZE][SIZE]) {
 	printf("\033[A");
 }
 
+
+
+
 int8_t findTarget(uint16_t array[SIZE],int8_t x,int8_t stop) {
 	int8_t t;
 	// if the position is already on the first, don't evaluate
@@ -136,6 +137,8 @@ int8_t findTarget(uint16_t array[SIZE],int8_t x,int8_t stop) {
 	// we did not find a
 	return x;
 }
+
+
 
 bool slideArray(uint16_t array[SIZE]) {
 	bool success = false;
@@ -224,6 +227,7 @@ bool findPairDown(uint16_t board[SIZE][SIZE]) {
 	return success;
 }
 
+
 int16_t countEmpty(uint16_t board[SIZE][SIZE]) {
 	int8_t x,y;
 	int16_t count=0;
@@ -279,6 +283,9 @@ void addRandom(uint16_t board[SIZE][SIZE]) {
 	}
 }
 
+
+
+// This function modifies the terminal settings of buffered input
 void setBufferedInput(bool enable) {
 	static bool enabled = true;
 	static struct termios old;
@@ -303,6 +310,25 @@ void setBufferedInput(bool enable) {
 	}
 }
 
+
+
+// This function starts a socket server at the PORT defined above and on the current machine
+
+
+/*
+
+	For communication between client and server, I am doing a simple thing,
+
+	there are two types of message, and the different parts of the message are delimited by colon " : "
+
+	code = 0 , registerUser() message, with name and score = 0 , formatted as------->   0 : name : 0 
+
+	code = 1,  uploadScore()  message, with name and score of client, formatted as ------> 1: name : points
+
+*/
+
+
+
 void createGameServer()
 {
 
@@ -314,7 +340,6 @@ void createGameServer()
 
    sockfd=socket(AF_INET,SOCK_DGRAM,0);
 
-//   bzero(&servaddr,sizeof(servaddr));
    servaddr.sin_family = AF_INET;
    servaddr.sin_addr.s_addr=htonl(INADDR_ANY);
    servaddr.sin_port=htons(PORT);
@@ -374,81 +399,14 @@ void createGameServer()
 
 
 
-int test() {
-	uint16_t array[SIZE];
-	uint16_t data[] = {
-		0,0,0,2,	2,0,0,0,
-		0,0,2,2,	4,0,0,0,
-		0,2,0,2,	4,0,0,0,
-		2,0,0,2,	4,0,0,0,
-		2,0,2,0,	4,0,0,0,
-		2,2,2,0,	4,2,0,0,
-		2,0,2,2,	4,2,0,0,
-		2,2,0,2,	4,2,0,0,
-		2,2,2,2,	4,4,0,0,
-		4,4,2,2,	8,4,0,0,
-		2,2,4,4,	4,8,0,0,
-		8,0,2,2,	8,4,0,0,
-		4,0,2,2,	4,4,0,0
-	};
-	uint16_t *in,*out;
-	uint16_t t,tests;
-	uint8_t i;
-	bool success = true;
-
-	tests = (sizeof(data)/sizeof(data[0]))/(2*SIZE);
-	for (t=0;t<tests;t++) {
-		in = data+t*2*SIZE;
-		out = in + SIZE;
-		for (i=0;i<SIZE;i++) {
-			array[i] = in[i];
-		}
-		slideArray(array);
-		for (i=0;i<SIZE;i++) {
-			if (array[i] != out[i]) {
-				success = false;
-			}
-		}
-		if (success==false) {
-			for (i=0;i<SIZE;i++) {
-				printf("%d ",in[i]);
-			}
-			printf("=> ");
-			for (i=0;i<SIZE;i++) {
-				printf("%d ",array[i]);
-			}
-			printf("expected ");
-			for (i=0;i<SIZE;i++) {
-				printf("%d ",in[i]);
-			}
-			printf("=> ");
-			for (i=0;i<SIZE;i++) {
-				printf("%d ",out[i]);
-			}
-			printf("\n");
-			break;
-		}
-	}
-	if (success) {
-		printf("All %u tests executed successfully\n",tests);
-	}
-	return !success;
-}
-
-
-void signal_callback_handler(int signum) {
-	printf("         TERMINATED         \n");
-	setBufferedInput(true);
-	printf("\033[?25h");
-	exit(signum);
-}
 
 
 
+
+//This function provides the continuous updates to the server about scores of the user
 void uploadScore()
 {
 
-//   puts("uploadScore called");
 
    int sockfd,n;
    struct sockaddr_in servaddr,cliaddr;
@@ -459,7 +417,6 @@ void uploadScore()
 
    sockfd=socket(AF_INET,SOCK_DGRAM,0);
 
-  // bzero(&servaddr,sizeof(servaddr));
    servaddr.sin_family = AF_INET;
    servaddr.sin_addr.s_addr=inet_addr(Gserver);
    servaddr.sin_port=htons(PORT);
@@ -468,11 +425,6 @@ void uploadScore()
    sprintf(sendline,"%d : %s : %d\n",1,name,score);
    sendto(sockfd,sendline,strlen(sendline),0,
              (struct sockaddr *)&servaddr,sizeof(servaddr));
-   //n=recvfrom(sockfd,recvline,10000,0,NULL,NULL);
-   //recvline[n]=0;
-   //fputs(recvline,stdout);
-   
-//   puts("uploadScore exiting");
 
 
 
@@ -480,7 +432,6 @@ void uploadScore()
 
 void registerUser(char name[])
 {
-//   puts("registerUser caleed");
    int sockfd,n;
    struct sockaddr_in servaddr,cliaddr;
    char sendline[1000];
@@ -490,10 +441,6 @@ void registerUser(char name[])
 
    sockfd=socket(AF_INET,SOCK_DGRAM,0);
 
-   //if( sockfd < 0 )
-//	 exit(1);
-
-  // bzero(&servaddr,sizeof(servaddr));
    servaddr.sin_family = AF_INET;
    servaddr.sin_addr.s_addr=inet_addr(Gserver);
    servaddr.sin_port=htons(PORT);
@@ -509,27 +456,46 @@ void registerUser(char name[])
  
    fputs(recvline,stdout);
    
-//puts("registerUser ending");
 
 
 }
 
+
+
+// cleaning up after game is finished, terminal characterstics are revived
+void signal_callback_handler(int signum) {
+        printf("         TERMINATED         \n");
+        setBufferedInput(true);
+        printf("\033[?25h");
+        exit(signum);
+}
+
+
+
+// we need to clean up our configuration of terminal if any sudden exit of program happens, so setting signal_callback_handler as the default handler for any unexpected exit.
+void setupSignalHandler()
+{
+
+        signal(SIGINT, signal_callback_handler);
+        signal(SIGSTOP,signal_callback_handler);
+        signal(SIGABRT,signal_callback_handler);
+        signal(SIGQUIT,signal_callback_handler);
+        signal(SIGTERM,signal_callback_handler);
+        signal(SIGKILL,signal_callback_handler);
+        signal(SIGTSTP,signal_callback_handler);
+
+
+
+}
+
+
+
 int main(int argc, char *argv[]) {
-	//uint16_t board[SIZE][SIZE];
 	
 	char c;
 	bool success;
 	bool isClient =false;
 
-	if (argc == 2 && strcmp(argv[1],"test")==0) {
-		return test();
-	}
-	if (argc == 2 && strcmp(argv[1],"blackwhite")==0) {
-		scheme = 1;
-	}
-	if (argc == 2 && strcmp(argv[1],"bluered")==0) {
-		scheme = 2;
-	}
 	if (argc == 2 && strcmp(argv[1],"server")==0 ) {
 		puts("Starting the 2048 server....");
 		createGameServer();
@@ -545,14 +511,18 @@ int main(int argc, char *argv[]) {
 
 	printf("\033[?25l\033[2J\033[H");
 
-	// register signal handler for when ctrl-c is pressed
-	signal(SIGINT, signal_callback_handler);
+	// register signal handler for when ctrl-c ,ctrl-z etc	
+	setupSignalHandler();
+
+
+
 
 	memset(board,0,sizeof(board));
 	addRandom(board);
 	addRandom(board);
 	drawBoard(board);
 	setBufferedInput(false);
+
 	while (true) {
 		c=getchar();
 		switch(c) {
