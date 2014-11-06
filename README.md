@@ -17,7 +17,7 @@ Original Project: https://github.com/mevdschee/2048.c
 
 ###Compilation
 
-TO compile, run the following command on terminal
+To compile, run the following command on terminal
 
 > $ g++ -o 2048.out 2048multiplayer.cpp 
 
@@ -30,8 +30,6 @@ To play the game in single user mode, simply run
 To play in multiplayer mode, first start the *server* using the command:
 
 > $ 2048.out server
-
-This will start a server on your system.
 
 Now to play the game, start a client using the command
 
