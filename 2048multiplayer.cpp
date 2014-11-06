@@ -576,6 +576,7 @@ int main(int argc, char *argv[]) {
 			c=getchar();
 				if (c=='y'){
 					score = 0;
+					uploadScore();
 					memset(board,0,sizeof(board));
 					addRandom(board);
 					addRandom(board);
